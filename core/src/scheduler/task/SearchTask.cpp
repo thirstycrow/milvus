@@ -103,9 +103,8 @@ XSearchTask::XSearchTask(const std::shared_ptr<server::Context>& context, Segmen
     : Task(TaskType::SearchTask, std::move(label)), context_(context), file_(file) {
     if (file_) {
         // distance -- value 0 means two vectors equal, ascending reduce, L2/HAMMING/JACCARD/TONIMOTO ...
-        // similarity -- infinity value means two vectors equal, descending reduce, IP
-        if (file_->metric_type_ == static_cast<int>(MetricType::IP) &&
-            file_->engine_type_ != static_cast<int>(EngineType::FAISS_PQ)) {
+        // similarity -- value 1 means two vectors equal, descending reduce, IP
+        if (file_->metric_type_ == static_cast<int>(MetricType::IP)) {
             ascending_reduce = false;
         }
 
@@ -235,11 +234,11 @@ XSearchTask::Execute() {
             }
             Status s;
             if (general_query != nullptr) {
-                std::unordered_map<std::string, engine::DataType> types;
+                std::unordered_map<std::string, DataType> types;
                 auto attr_type = search_job->attr_type();
                 auto type_it = attr_type.begin();
                 for (; type_it != attr_type.end(); type_it++) {
-                    types.insert(std::make_pair(type_it->first, (engine::DataType)(type_it->second)));
+                    types.insert(std::make_pair(type_it->first, (DataType)(type_it->second)));
                 }
 
                 auto query_ptr = search_job->query_ptr();
@@ -281,7 +280,7 @@ XSearchTask::Execute() {
             search_job->time_stat().reduce_time += span / 1000;
         } catch (std::exception& ex) {
             LOG_ENGINE_ERROR_ << LogOut("[%s][%ld] SearchTask encounter exception: %s", "search", 0, ex.what());
-            // search_job->IndexSearchDone(index_id_);  //mark as done avoid dead lock, even search failed
+            search_job->GetStatus() = Status(SERVER_UNEXPECTED_ERROR, ex.what());
         }
 
         /* step 4: notify to send result to client */
@@ -308,7 +307,6 @@ XSearchTask::MergeTopkToResultSet(const scheduler::ResultIds& src_ids, const sch
 
     scheduler::ResultIds buf_ids(nq * buf_k, -1);
     scheduler::ResultDistances buf_distances(nq * buf_k, 0.0);
-
     for (uint64_t i = 0; i < nq; i++) {
         size_t buf_k_j = 0, src_k_j = 0, tar_k_j = 0;
         size_t buf_idx, src_idx, tar_idx;

@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#
 BUILD_OUTPUT_DIR="cmake_build"
 BUILD_TYPE="Debug"
 BUILD_UNITTEST="OFF"
@@ -16,9 +16,10 @@ FAISS_ROOT="" #FAISS root path
 FAISS_SOURCE="BUNDLED"
 WITH_PROMETHEUS="ON"
 FIU_ENABLE="OFF"
+CUDA_ARCH="DEFAULT"
 # BUILD_OPENBLAS="ON" # not used any more
 
-while getopts "p:d:t:f:ulrcghzmei" arg; do
+while getopts "p:d:t:f:s:ulrcghzmei" arg; do
   case $arg in
   p)
     INSTALL_PREFIX=$OPTARG
@@ -64,6 +65,9 @@ while getopts "p:d:t:f:ulrcghzmei" arg; do
   i)
     FIU_ENABLE="ON"
     ;;
+  s)
+    CUDA_ARCH=$OPTARG
+    ;;
   h) # help
     echo "
 
@@ -83,10 +87,11 @@ parameter:
 -m: build with MKL(default: OFF)
 -e: build without prometheus(default: OFF)
 -i: build FIU_ENABLE(default: OFF)
+-s: build with CUDA arch(default:DEFAULT), for example '-gencode=compute_61,code=sm_61;-gencode=compute_75,code=sm_75'
 -h: help
 
 usage:
-./build.sh -p \${INSTALL_PREFIX} -t \${BUILD_TYPE} -f \${FAISS_ROOT} [-u] [-l] [-r] [-c] [-z] [-g] [-m] [-e] [-h]
+./build.sh -p \${INSTALL_PREFIX} -t \${BUILD_TYPE} -f \${FAISS_ROOT} -s \${CUDA_ARCH}[-u] [-l] [-r] [-c] [-z] [-g] [-m] [-e] [-h]
                 "
     exit 0
     ;;
@@ -122,6 +127,7 @@ CMAKE_CMD="cmake \
 -DFAISS_WITH_MKL=${WITH_MKL} \
 -DMILVUS_WITH_PROMETHEUS=${WITH_PROMETHEUS} \
 -DMILVUS_WITH_FIU=${FIU_ENABLE} \
+-DMILVUS_CUDA_ARCH=${CUDA_ARCH} \
 ../"
 echo ${CMAKE_CMD}
 ${CMAKE_CMD}
@@ -139,7 +145,7 @@ if [[ ${RUN_CPPLINT} == "ON" ]]; then
   fi
   echo "cpplint check passed!"
 
-  # clang-format check
+  clang-format check
   make check-clang-format
   if [ $? -ne 0 ]; then
     echo "ERROR! clang-format check failed"
@@ -157,5 +163,5 @@ if [[ ${RUN_CPPLINT} == "ON" ]]; then
 else
 
   # compile and build
-  make -j 8 install || exit 1
+    make -j 8 install || exit 1
 fi

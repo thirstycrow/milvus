@@ -20,6 +20,11 @@
 
 namespace milvus {
 namespace engine {
+namespace snapshot {
+class Segment;
+class Partition;
+class Collection;
+}  // namespace snapshot
 namespace utils {
 
 int64_t
@@ -81,7 +86,6 @@ ExitOnWriteError(Status& status);
 
 void
 EraseFromCache(const std::string& item_key);
-
 }  // namespace utils
 }  // namespace engine
 }  // namespace milvus

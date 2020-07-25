@@ -16,14 +16,18 @@
 #include <unistd.h>
 #include <boost/filesystem.hpp>
 #include <chrono>
+#include <memory>
 #include <mutex>
 #include <regex>
 #include <vector>
 
 #include "cache/CpuCacheMgr.h"
+#include "db/Types.h"
+
 #ifdef MILVUS_GPU_VERSION
 #include "cache/GpuCacheMgr.h"
 #endif
+
 #include "config/Config.h"
 //#include "storage/s3/S3ClientWrapper.h"
 #include "utils/CommonUtil.h"
@@ -252,8 +256,10 @@ GetIndexName(int32_t index_type) {
         {(int32_t)engine::EngineType::FAISS_IVFSQ8, "IVF_SQ8"},
         {(int32_t)engine::EngineType::FAISS_IVFSQ8H, "IVF_SQ8_HYBRID"},
         {(int32_t)engine::EngineType::FAISS_PQ, "IVF_PQ"},
+#ifdef MILVUS_SUPPORT_SPTAG
         {(int32_t)engine::EngineType::SPTAG_KDT, "SPTAG_KDT_RNT"},
         {(int32_t)engine::EngineType::SPTAG_BKT, "SPTAG_BKT_RNT"},
+#endif
         {(int32_t)engine::EngineType::FAISS_BIN_IDMAP, "BIN_FLAT"},
         {(int32_t)engine::EngineType::FAISS_BIN_IVFFLAT, "BIN_IVF_FLAT"},
         {(int32_t)engine::EngineType::HNSW, "HNSW"},
@@ -299,7 +305,6 @@ EraseFromCache(const std::string& item_key) {
     }
 #endif
 }
-
 }  // namespace utils
 }  // namespace engine
 }  // namespace milvus

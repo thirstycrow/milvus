@@ -78,10 +78,11 @@ class ExecutionEngineImpl : public ExecutionEngine {
 
     Status
     ExecBinaryQuery(query::GeneralQueryPtr general_query, faiss::ConcurrentBitsetPtr& bitset,
-                    std::unordered_map<std::string, DataType>& attr_type, std::string& vector_placeholder) override;
+                    std::unordered_map<std::string, meta::hybrid::DataType>& attr_type,
+                    std::string& vector_placeholder) override;
 
     Status
-    HybridSearch(scheduler::SearchJobPtr job, std::unordered_map<std::string, DataType>& attr_type,
+    HybridSearch(scheduler::SearchJobPtr job, std::unordered_map<std::string, meta::hybrid::DataType>& attr_type,
                  std::vector<float>& distances, std::vector<int64_t>& search_ids, bool hybrid) override;
 
     Status
@@ -128,19 +129,19 @@ class ExecutionEngineImpl : public ExecutionEngine {
 
     Status
     ProcessTermQuery(faiss::ConcurrentBitsetPtr& bitset, query::TermQueryPtr term_query,
-                     std::unordered_map<std::string, DataType>& attr_type);
+                     std::unordered_map<std::string, meta::hybrid::DataType>& attr_type);
 
     Status
-    IndexedTermQuery(faiss::ConcurrentBitsetPtr& bitset, const std::string& field_name, const DataType& data_type,
-                     milvus::json& term_values_json);
+    IndexedTermQuery(faiss::ConcurrentBitsetPtr& bitset, const std::string& field_name,
+                     const meta::hybrid::DataType& data_type, milvus::json& term_values_json);
 
     Status
-    ProcessRangeQuery(const std::unordered_map<std::string, DataType>& attr_type, faiss::ConcurrentBitsetPtr& bitset,
-                      query::RangeQueryPtr range_query);
+    ProcessRangeQuery(const std::unordered_map<std::string, meta::hybrid::DataType>& attr_type,
+                      faiss::ConcurrentBitsetPtr& bitset, query::RangeQueryPtr range_query);
 
     Status
-    IndexedRangeQuery(faiss::ConcurrentBitsetPtr& bitset, const DataType& data_type, knowhere::IndexPtr& index_ptr,
-                      milvus::json& range_values_json);
+    IndexedRangeQuery(faiss::ConcurrentBitsetPtr& bitset, const meta::hybrid::DataType& data_type,
+                      knowhere::IndexPtr& index_ptr, milvus::json& range_values_json);
 
     void
     HybridLoad() const;
