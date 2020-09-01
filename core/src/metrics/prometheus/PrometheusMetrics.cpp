@@ -34,19 +34,21 @@ PrometheusMetrics::Init() {
         int64_t server_port = config.network.bind.port();
         int64_t push_port = config.metric.port();
         std::string push_address = config.metric.address();
+        std::string cluster = config.metric.cluster_label();
+        std::string instance = config.metric.instance_label();
 
         const std::string uri = std::string("/metrics");
         // const std::size_t num_threads = 2;
 
-        std::string hostportstr;
-        char hostname[1024];
-        if (gethostname(hostname, sizeof(hostname)) == 0) {
-            hostportstr = std::string(hostname) + ":" + std::to_string(server_port);
-        } else {
-            hostportstr = "pushgateway";
+        if (instance.empty()) {
+            char hostname[1024];
+            if (gethostname(hostname, sizeof(hostname)) == 0) {
+                instance = std::string(hostname) + ":" + std::to_string(server_port);
+            } else {
+                instance = "pushgateway";
+            }
         }
-
-        auto labels = prometheus::Gateway::GetInstanceLabel(hostportstr);
+        auto labels = prometheus::Gateway::Labels{{"cluster",cluster},{"instance",instance}};
 
         // Init pushgateway
         gateway_ =

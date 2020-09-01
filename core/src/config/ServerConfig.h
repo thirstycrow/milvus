@@ -119,6 +119,8 @@ struct ServerConfig {
         Bool enable{false};
         String address{"unknown"};
         Integer port{0};
+        String cluster_label{"milvus"};
+        String instance_label{""};
     } metric;
 
     struct Engine {
